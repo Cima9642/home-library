@@ -3,11 +3,28 @@ import { PasswordGate } from './components/PasswordGate'
 import { BookForm } from './components/BookForm'
 import { BookList } from './components/BookList'
 import { getAllBooks, searchBooks, addBook, updateBook, deleteBook } from './lib/books'
+import { hasSupabaseConfig } from './lib/supabaseClient'
 import type { Book, BookInput } from './types'
 
 
 
 function LibraryApp() {
+  if (!hasSupabaseConfig) {
+    return (
+      <div className="min-h-screen bg-slate-100 p-4 md:p-8">
+        <div className="max-w-2xl mx-auto rounded-lg border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+          <h1 className="text-2xl font-bold">📚 Home Library</h1>
+          <p className="mt-3">
+            The app is missing its Supabase production environment variables.
+          </p>
+          <p className="mt-2 text-sm">
+            Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your deployment environment, then rebuild.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const [books, setBooks] = useState<Book[]>([])
   const [query, setQuery] = useState('')
   const [editingBook, setEditingBook] = useState<Book | null>(null)
@@ -16,9 +33,12 @@ function LibraryApp() {
 
   async function loadBooks() {
     setLoading(true)
-    const data = query.trim() ? await searchBooks(query.trim()) : await getAllBooks()
-    setBooks(data)
-    setLoading(false)
+    try {
+      const data = query.trim() ? await searchBooks(query.trim()) : await getAllBooks()
+      setBooks(data)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
