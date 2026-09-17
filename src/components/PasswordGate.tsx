@@ -3,11 +3,11 @@ import {useState, type ReactNode } from 'react';
 const APP_PASSWORD = import.meta.env.VITE_APP_PASSWORD;
 const SESSION_KEY = 'home-library-unlocked'
 
-export function PasswordGate({childer}: {children: ReactNode}) {
+export function PasswordGate({children}: {children: ReactNode}) {
     const [unlocked, setUnlocked] = useState(
         () => sessionStorage.getItem(SESSION_KEY) === 'true'
     )
-    const [input,setInput] = userState('')
+    const [input,setInput] = useState('')
     const [error, setError] = useState(false)
 
     function handleSubmit(e: React.FormEvent) {
@@ -52,7 +52,7 @@ export function PasswordGate({childer}: {children: ReactNode}) {
                 >
                     Enter
                 </button>
-                
+
             </form>
         </div>
     )
