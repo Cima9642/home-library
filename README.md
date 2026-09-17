@@ -1,135 +1,132 @@
-# React + TypeScript + Vite
+# 📚 Home Library
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple, self-hosted book inventory app for tracking what your household owns: title, author, format, language, quantity, and whether it's on the wishlist. Built to be forked, customized, and run by anyone who wants their own private catalog without setting up a full backend.
 
-Currently, two official plugins are available:
+Search your collection before buying a duplicate, log new books in seconds, and keep the whole thing locked behind a shared password so it's safe to host publicly.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Add, edit, and delete books** with title, author, format (Hardback / Paperback / Board), quantity, language (English / Spanish / Bilingual), and wishlist status
+- **Search** by title or author to check if you already own something
+- **Password-gated access** — safe to deploy publicly while staying private to your household
+- Built on **React + TypeScript + Vite**, **Supabase**, and **Tailwind CSS** — no custom backend server required
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech stack
 
-## Expanding the ESLint configuration
+| Layer | Tool |
+|---|---|
+| Frontend framework | React + TypeScript (Vite) |
+| Styling | Tailwind CSS |
+| Database & API | Supabase (Postgres) |
+| Hosting | Vercel |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 1. Clone and install
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+git clone https://github.com/YOUR_USERNAME/home-library.git
+cd home-library
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Set up Supabase
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In the SQL Editor, run:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+    ```sql
+    create table books (
+      id uuid primary key default gen_random_uuid(),
+      title text not null,
+      author text not null,
+      material text not null check (material in ('Board', 'Hardback', 'Paperback')),
+      quantity integer not null default 1,
+      language text not null check (language in ('English', 'Spanish', 'Bilingual')),
+      wishlisted boolean not null default false,
+      created_at timestamptz not null default now()
+    );
+
+    alter table books enable row level security;
+
+    create policy "Allow all access to books"
+    on books
+    for all
+    using (true)
+    with check (true);
+    ```
+
+3. Grab your **Project URL** and **anon/publishable key** from Settings → API.
+
+> **Note on security:** this schema uses a permissive RLS policy, since access control is handled by the app's password gate rather than per-user database rules. This is appropriate for a small private tool, not for sensitive data. If you need real per-user access control, look into Supabase Auth instead.
+
+### 3. Configure environment variables
+
+Create a `.env.local` file in the project root:
 
 ```
-## Build Checklist
+VITE_SUPABASE_URL=your-supabase-project-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_APP_PASSWORD=choose-a-shared-password
+```
 
-### Phase 0 — Setup
-- [ ] `npm create vite@latest book-inventory -- --template react`
-- [ ] `cd book-inventory && npm install`
-- [ ] Install Tailwind: `npm install tailwindcss @tailwindcss/vite`
-- [ ] Add Tailwind directives to `src/index.css`, configure `vite.config.js` plugin
-- [ ] `npm install @supabase/supabase-js`
-- [ ] Create Supabase project → copy URL + anon key into `.env.local`
+All three **must** be prefixed with `VITE_` — Vite only exposes environment variables to the frontend if they start with that prefix. Never commit this file (it's already covered by `.gitignore`).
 
-### Phase 1 — Database
-- [ ] Create the `books` table (id, name, author, category, qty, language, isbn, cover_url, status, created_at)
-- [ ] Enable RLS on the table (toggle in Supabase table settings)
-- [ ] Import spreadsheet via CSV, add `status = 'owned'` to all existing rows
+### 4. Run it locally
 
-### Phase 1.5 — Auth
-- [ ] Supabase dashboard → Authentication → Users → add your account + your wife's account (auto-confirm on)
-- [ ] Run the RLS SQL policies in the SQL Editor
-- [ ] Build `Login.jsx`
-- [ ] Wrap `App.jsx` with the session check
-- [ ] Test: confirm logged-out users see the login screen, and Supabase queries fail without a session
+```bash
+npm run dev
+```
 
-### Phase 2 — Read/list working end to end
-- [ ] Build `supabaseClient.js`
-- [ ] Build `BookCard.jsx`
-- [ ] Build `BookList.jsx` (fetch `status = 'owned'`, render cards)
-- [ ] Confirm data renders in `App.jsx`
+Open the printed local URL, enter the password you set, and you should see the app.
 
-### Phase 3 — Search
-- [ ] Build `SearchBar.jsx`
-- [ ] Wire `.ilike` filter on name/author
+## Importing existing data
 
-### Phase 4 — Manual add
-- [ ] Build `AddBookForm.jsx`
-- [ ] Wire `supabase.from('books').insert(...)`
-- [ ] Refresh list on success
+If you already have a spreadsheet of books:
 
-### Phase 5 — Barcode scanning
-- [ ] `npm install @zxing/browser`
-- [ ] Build `BarcodeScanner.jsx`
-- [ ] Test camera permission on your phone (needs HTTPS — test on a Vercel preview URL, not local http)
+1. Make sure your CSV's column headers exactly match the table's columns: `title, author, material, quantity, language, wishlisted`.
+2. **Leave out `id` and `created_at`** — the database generates both automatically.
+3. Make sure `language` only contains `English`, `Spanish`, or `Bilingual`, and `material` only contains `Board`, `Hardback`, or `Paperback` (exact spelling and casing).
+4. In Supabase: Table Editor → `books` → Insert → **Import data from CSV**.
 
-### Phase 6 — Autofill from ISBN
-- [ ] Build `bookLookup.js` (Google Books → fallback Open Library)
-- [ ] Wire scanner → lookup → prefill `AddBookForm`
+## Deploying to Vercel
 
-### Phase 7 — Cover photos
-- [ ] Save `cover_url` on insert
-- [ ] Render in `BookCard`, add placeholder for missing covers
+1. Push your repo to GitHub.
+2. Import it at [vercel.com/new](https://vercel.com/new). Vercel auto-detects the Vite build settings.
+3. Under Environment Variables, add the same three from your `.env.local` — scoped to **Production**.
+4. Deploy.
 
-### Phase 8 — Wishlist
-- [ ] Add owned/wishlist toggle in `AddBookForm`
-- [ ] Add tabs in `App.jsx` filtering by `status`
-- [ ] "Move to shelf" button updating `status`
+Environment variables are baked into the build at build time, not read live — so if you add or change one later, you'll need to **trigger a new deployment** for it to take effect.
 
-### Phase 9 — Polish & deploy
-- [ ] Tailwind mobile-first pass
-- [ ] Push to GitHub → connect to Vercel
-- [ ] Add env vars in Vercel dashboard (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
-- [ ] Full real-phone test: login → scan → autofill → save → search → wishlist toggle → logout
+## Project structure
+
+```
+src/
+├── main.tsx                  # React entry point
+├── App.tsx                    # top-level component
+├── types.ts                    # shared TypeScript types (Book, Language, Material, etc.)
+├── lib/
+│   ├── supabaseClient.ts        # single shared Supabase client instance
+│   └── books.ts                  # all database queries for the books table
+└── components/
+    ├── PasswordGate.tsx           # simple shared-password lock screen
+    ├── BookForm.tsx                 # add/edit form
+    └── BookList.tsx                  # search results / inventory list
+```
+
+Database logic lives entirely in `lib/`; components only render UI and call into `lib/` functions — they never talk to Supabase directly.
+
+## A note on the password gate
+
+Access control here is intentionally lightweight: a single shared password, checked client-side, remembered for the browser session via `sessionStorage`. It's meant to keep casual visitors and search engines out of a small private tool — not to withstand a determined attacker (the password does end up in the built JavaScript bundle). Don't reuse a sensitive password for it, and don't use this pattern for anything storing sensitive data.
+
+## Roadmap / ideas for forks
+
+- [ ] Tabbed Inventory / Add Book views with bulk checkbox actions (select multiple books to delete or wishlist at once)
+- [ ] Sort/filter by language, material, or wishlist status
+- [ ] Cover images via Supabase Storage
+- [ ] Per-user accounts via Supabase Auth
+
+## License
+
+MIT — feel free to fork, modify, and use for your own household (or anyone else's).

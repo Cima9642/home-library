@@ -171,8 +171,10 @@ function LibraryApp() {
 
 function App() {
   return (
+    
     <PasswordGate>
       <LibraryApp />
+      
     </PasswordGate>
   )
 }
