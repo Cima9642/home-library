@@ -1,4 +1,4 @@
-# 📚 Home Library
+# Home Library
 
 A simple, self-hosted book inventory app for tracking what your household owns: title, author, format, language, quantity, and whether it's on the wishlist. Built to be forked, customized, and run by anyone who wants their own private catalog without setting up a full backend.
 
