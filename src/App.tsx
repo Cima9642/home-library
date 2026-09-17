@@ -115,7 +115,7 @@ function LibraryApp() {
     <div className="min-h-screen bg-slate-100 p-4 md:p-8">
       <div className="max-w-2xl mx-auto space-y-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-slate-800">📚 Home Library</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Home Library</h1>
           <button
             onClick={() => {
               setEditingBook(null)
