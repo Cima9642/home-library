@@ -1,11 +1,11 @@
 import {useState, type ReactNode } from 'react';
 
-const APP_PASSWORD = import.meta.env.VITE_APP_PASSWORD;
+const APP_PASSWORD = import.meta.env.VITE_APP_PASSWORD ?? '';
 const SESSION_KEY = 'home-library-unlocked'
 
 export function PasswordGate({children}: {children: ReactNode}) {
     const [unlocked, setUnlocked] = useState(
-        () => sessionStorage.getItem(SESSION_KEY) === 'true'
+        () => APP_PASSWORD === '' || sessionStorage.getItem(SESSION_KEY) === 'true'
     )
     const [input,setInput] = useState('')
     const [error, setError] = useState(false)
@@ -48,7 +48,7 @@ export function PasswordGate({children}: {children: ReactNode}) {
                 {error && <p className="text-red-600 text-sm mb-2">Incorrect password</p>}
                 <button
                 type="submit"
-                className="w-full bg-slate800 text-white rounded py-2 hover:bg=slate-700"
+                className="w-full bg-slate-800 text-white rounded py-2 hover:bg-slate-700"
                 >
                     Enter
                 </button>
