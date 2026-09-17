@@ -2,9 +2,11 @@ import type {Book} from '../types'
 
 interface Props {
     books: Book[]
+    onEdit: (book: Book) => void
+    onDelete: (id: string) => void | Promise<void>
 }
 
-export function BookList({books}: Props) {
+export function BookList({books, onEdit, onDelete}: Props) {
     if (books.length === 0) {
         return <p className="text-slate-500 italic">No books found</p>
     }
