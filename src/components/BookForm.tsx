@@ -112,7 +112,7 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
           <button
             type="button"
             onClick={onCancel}
-            className="border border-slate-300 rounded px-4 py-2"
+            className="bg-slate-800 border border-slate-300 rounded px-4 py-2"
           >
             Cancel
           </button>
