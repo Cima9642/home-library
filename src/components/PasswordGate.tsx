@@ -41,7 +41,7 @@ export function PasswordGate({children}: {children: ReactNode}) {
                     setError(false)
                 }}
                 placeholder="Enter password"
-                className="w-full border border-slate-300 rounded px-3 py-2 mb-2"
+                className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900 placeholder-slate-400 mb-2"
                 autoFocus
                 />
 

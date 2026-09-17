@@ -80,7 +80,7 @@ function LibraryApp() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by title or author..."
-            className="flex-1 border border-slate-300 rounded px-3 py-2"
+            className="flex-1 border border-slate-300 rounded bg-white px-3 py-2 text-slate-900 placeholder-slate-400"
           />
           <button type="submit" className="bg-slate-800 text-white rounded px-4 py-2">
             Search

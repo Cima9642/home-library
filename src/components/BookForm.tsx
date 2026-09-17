@@ -38,7 +38,7 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="w-full border border-slate-300 rounded px-3 py-2"
+          className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900 placeholder-slate-400"
         />
       </div>
 
@@ -48,7 +48,7 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
           required
-          className="w-full border border-slate-300 rounded px-3 py-2"
+          className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900 placeholder-slate-400"
         />
       </div>
 
@@ -60,7 +60,7 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
             min={0}
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
-            className="w-full border border-slate-300 rounded px-3 py-2"
+            className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900"
           />
         </div>
 
@@ -69,7 +69,7 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value as Language)}
-            className="w-full border border-slate-300 rounded px-3 py-2"
+            className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900"
           >
             {LANGUAGES.map((lang) => (
               <option key={lang} value={lang}>{lang}</option>
@@ -82,7 +82,7 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
           <select
             value={material}
             onChange={(e) => setMaterial(e.target.value as Material)}
-            className="w-full border border-slate-300 rounded px-3 py-2"
+            className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900"
           >
             {MATERIALS.map((mat) => (
               <option key={mat} value={mat}>{mat}</option>
