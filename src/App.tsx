@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { PasswordGate } from './components/PasswordGate'
 import { BookForm } from './components/BookForm'
 import { BookList } from './components/BookList'
@@ -9,11 +9,97 @@ import type { Book, BookInput } from './types'
 
 
 function LibraryApp() {
+  const [books, setBooks] = useState<Book[]>([])
+  const [query, setQuery] = useState('')
+  const [editingBook, setEditingBook] = useState<Book | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchBooks = useCallback(async () => {
+    return query.trim() ? searchBooks(query.trim()) : getAllBooks()
+  }, [query])
+
+  async function loadBooks() {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchBooks()
+      setBooks(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load books.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!hasSupabaseConfig) {
+      return
+    }
+
+    let cancelled = false
+
+    async function initialize() {
+      try {
+        const data = await fetchBooks()
+        if (!cancelled) {
+          setBooks(data)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load books.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void initialize()
+
+    return () => {
+      cancelled = true
+    }
+  }, [fetchBooks])
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    await loadBooks()
+  }
+
+  async function handleAddOrEdit(input: BookInput) {
+    try {
+      if (editingBook) {
+        await updateBook(editingBook.id, input)
+      } else {
+        await addBook(input)
+      }
+      setShowForm(false)
+      setEditingBook(null)
+      await loadBooks()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save book.')
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Delete this book?')) return
+
+    try {
+      await deleteBook(id)
+      await loadBooks()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete book.')
+    }
+  }
+
   if (!hasSupabaseConfig) {
     return (
       <div className="min-h-screen bg-slate-100 p-4 md:p-8">
         <div className="max-w-2xl mx-auto rounded-lg border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
-          <h1 className="text-2xl font-bold">📚 Home Library</h1>
+          <h1 className="text-2xl font-bold"> Home Library</h1>
           <p className="mt-3">
             The app is missing its Supabase production environment variables.
           </p>
@@ -23,49 +109,6 @@ function LibraryApp() {
         </div>
       </div>
     )
-  }
-
-  const [books, setBooks] = useState<Book[]>([])
-  const [query, setQuery] = useState('')
-  const [editingBook, setEditingBook] = useState<Book | null>(null)
-  const [showForm, setShowForm] = useState(false)
-  const [loading, setLoading] = useState(true)
-
-  async function loadBooks() {
-    setLoading(true)
-    try {
-      const data = query.trim() ? await searchBooks(query.trim()) : await getAllBooks()
-      setBooks(data)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadBooks()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    await loadBooks()
-  }
-
-  async function handleAddOrEdit(input: BookInput) {
-    if (editingBook) {
-      await updateBook(editingBook.id, input)
-    } else {
-      await addBook(input)
-    }
-    setShowForm(false)
-    setEditingBook(null)
-    await loadBooks()
-  }
-
-  async function handleDelete(id: string) {
-    if (!confirm('Delete this book?')) return
-    await deleteBook(id)
-    await loadBooks()
   }
 
   return (
@@ -106,6 +149,8 @@ function LibraryApp() {
             Search
           </button>
         </form>
+
+        {error && <p className="text-red-600">{error}</p>}
 
         {loading ? (
           <p className="text-slate-500">Loading...</p>
