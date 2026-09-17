@@ -16,12 +16,12 @@ export function BookList({books, onEdit, onDelete}: Props) {
             {books.map((book) => (
                 <li
                     key={book.id}
-                    className="flex items-center justify-between rounded-lg bg-white p-4 shadow"
+                    className={`flex items-center justify-between rounded-lg bg-white p-4 shadow`}
                 >
                     <div>
                         <p className="font-semibold text-slate-800">{book.title}</p>
                         <p className="text-sm text-slate-500">
-                            {book.author} · {book.language} · {book.material} · Qty: {book.quantity}
+                            {book.author} · {book.language} · {book.material} {!book.wishlisted && `· Qty: ${book.quantity}`}
                         </p>
                         {book.wishlisted && (
                             <span className="inline-block mt-1 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">

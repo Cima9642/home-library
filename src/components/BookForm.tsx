@@ -72,7 +72,9 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
             className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900"
           >
             {LANGUAGES.map((lang) => (
-              <option key={lang} value={lang}>{lang}</option>
+              <option key={lang} value={lang}>
+                {lang}
+              </option>
             ))}
           </select>
         </div>
@@ -85,7 +87,9 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
             className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900"
           >
             {MATERIALS.map((mat) => (
-              <option key={mat} value={mat}>{mat}</option>
+              <option key={mat} value={mat}>
+                {mat}
+              </option>
             ))}
           </select>
         </div>
@@ -93,11 +97,12 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
 
       <label className="flex items-center gap-2 text-sm text-slate-700">
         <input
+          className="toggle bg-slate-800 checked:border-orange-500 checked:bg-orange-400 checked:text-orange-800"
           type="checkbox"
           checked={wishlisted}
           onChange={(e) => setWishlisted(e.target.checked)}
         />
-        Wishlisted (don't own it yet)
+        Add to Wishlist
       </label>
 
       <div className="flex gap-2 pt-2">
