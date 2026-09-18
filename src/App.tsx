@@ -201,7 +201,7 @@ function LibraryApp() {
             {showInventory ? (
               <>
                 {selected.size > 0 && (
-                  <div className='flex items-center gap-2 bg-white p-3 rounded-lg shadow text-sm'>
+                  <div className='sticky top-0 flex items-center gap-2 bg-white p-3 rounded-lg shadow text-sm'>
                     <span className="text-slate-600">{selected.size} selected</span>
                     <button type="button" onClick={bulkDelete} className='text-red-600 hover:underline ml-auto'>
                       Delete
