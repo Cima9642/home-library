@@ -215,7 +215,7 @@ function LibraryApp() {
               </button>
             </form>
 
-            {showInventory ? (
+            {showInventory && (
               <>
                 {selected.size > 0 && (
                   <div className="sticky top-0 flex items-center gap-2 rounded-lg bg-white p-3 text-sm shadow">
@@ -274,11 +274,8 @@ function LibraryApp() {
                   />
                 )}
               </>
-            ) : (
-              <p className="rounded-lg bg-white p-4 text-slate-500 shadow">
-                Search is available above. Click Inventory to show the list.
-              </p>
             )}
+              
           </>
         )}
       </div>
