@@ -13,8 +13,13 @@ function LibraryApp() {
   const [query, setQuery] = useState('')
   const [editingBook, setEditingBook] = useState<Book | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showInventory, setShowInventory] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+
+
 
   const fetchBooks = useCallback(async () => {
     return query.trim() ? searchBooks(query.trim()) : getAllBooks()
@@ -66,6 +71,7 @@ function LibraryApp() {
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault()
+    setShowInventory(true)
     await loadBooks()
   }
 
@@ -78,6 +84,7 @@ function LibraryApp() {
       }
       setShowForm(false)
       setEditingBook(null)
+      setShowInventory(true)
       await loadBooks()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save book.')
@@ -93,6 +100,34 @@ function LibraryApp() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete book.')
     }
+  }
+
+  function toggleSelect(id:string){
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)){
+        next.delete(id)
+
+      }else{
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  async function bulkDelete() {
+    if(selected.size ===0) return
+    if(!confirm(`Delete ${selected.size} book(s)?`)) return
+    await Promise.all([...selected].map((id) => deleteBook(id)))
+    setSelected(new Set())
+    await loadBooks()
+  }
+
+  async function bulkSetWishlist(wishlisted: boolean) {
+    if(selected.size === 0) return
+    await Promise.all([...selected].map((id) => updateBook(id, {wishlisted})))
+    setSelected(new Set())
+    await loadBooks()
   }
 
   if (!hasSupabaseConfig) {
@@ -116,7 +151,20 @@ function LibraryApp() {
       <div className="max-w-2xl mx-auto space-y-4">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-slate-800">Home Library</h1>
+
+          <div className="flex gap-1 bg-slate-200 rounded-lg p-1 w-fit">
+            <button
+            type="button"
+            onClick={() => setShowInventory((v) => !v)}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium ${
+              showInventory ? 'bg-white shadow text-slate-800':'text-slate-600'
+              }`}
+              >
+              {showInventory ? 'Hide inventory' : 'Inventory'}
+              </button>
+          </div>
           <button
+            type="button"
             onClick={() => {
               setEditingBook(null)
               setShowForm((v) => !v)
@@ -127,7 +175,7 @@ function LibraryApp() {
           </button>
         </div>
 
-        {showForm && (
+        {showForm ? (
           <BookForm
             initial={editingBook ?? undefined}
             onSubmit={handleAddOrEdit}
@@ -136,33 +184,58 @@ function LibraryApp() {
               setEditingBook(null)
             }}
           />
-        )}
-
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title or author..."
-            className="flex-1 border border-slate-300 rounded bg-white px-3 py-2 text-slate-900 placeholder-slate-400"
-          />
-          <button type="submit" className="bg-slate-800 text-white rounded px-4 py-2">
-            Search
-          </button>
-        </form>
-
-        {error && <p className="text-red-600">{error}</p>}
-
-        {loading ? (
-          <p className="text-slate-500">Loading...</p>
         ) : (
-          <BookList
-            books={books}
-            onEdit={(book) => {
-              setEditingBook(book)
-              setShowForm(true)
-            }}
-            onDelete={handleDelete}
-          />
+          <>
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search by title or author..."
+                className="flex-1 border border-slate-300 rounded bg-white px-3 py-2 text-slate-900 placeholder-slate-400"
+              />
+              <button type="submit" className="bg-slate-800 text-white rounded px-4 py-2">
+                Search
+              </button>
+            </form>
+
+            {showInventory ? (
+              <>
+                {selected.size > 0 && (
+                  <div className='flex items-center gap-2 bg-white p-3 rounded-lg shadow text-sm'>
+                    <span className="text-slate-600">{selected.size} selected</span>
+                    <button type="button" onClick={bulkDelete} className='text-red-600 hover:underline ml-auto'>
+                      Delete
+                    </button>
+                    <button type="button" onClick={() => bulkSetWishlist(true)} className='text-amber-700 hover:underline'>
+                      Wishlist
+                    </button>
+                    <button type="button" onClick={() => bulkSetWishlist(false)} className='text-slate-700 hover:underline'>
+                      Remove from Wishlist
+                    </button>
+                  </div>
+                )}
+
+                {error && <p className="text-red-600">{error}</p>}
+
+                {loading ? (
+                  <p className="text-slate-500">Loading...</p>
+                ) : (
+                  <BookList
+                    books={books}
+                    selected={selected}
+                    onToggleSelect={toggleSelect}
+                    onEdit={(book) => {
+                      setEditingBook(book)
+                      setShowForm(true)
+                    }}
+                    onDelete={handleDelete}
+                  />
+                )}
+              </>
+            ) : (
+              <p className="rounded-lg bg-white p-4 text-slate-500 shadow">Search is available above. Click Inventory to show the list.</p>
+            )}
+          </>
         )}
       </div>
     </div>

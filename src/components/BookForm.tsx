@@ -59,6 +59,8 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
             type="number"
             min={0}
             value={quantity}
+            inputMode="numeric"
+            pattern="[0-9]*"
             onChange={(e) => setQuantity(Number(e.target.value))}
             className="w-full border border-slate-300 rounded bg-white px-3 py-2 text-slate-900"
           />
