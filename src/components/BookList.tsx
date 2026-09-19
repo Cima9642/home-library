@@ -39,6 +39,7 @@ export function BookList({books, selected, onToggleSelect, onEdit, onDelete}: Pr
                             )}
                         </div>
                     </label>
+                    {/**TODO: Add delete confirmation */}
                     <div className="flex gap-2">
                         <button
                         onClick={() => onEdit(book)}

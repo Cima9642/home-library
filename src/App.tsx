@@ -1,10 +1,14 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { PasswordGate } from './components/PasswordGate'
 import { BookForm } from './components/BookForm'
 import { BookList } from './components/BookList'
 import { addBook, deleteBook, getAllBooks, searchBooks, updateBook } from './lib/books'
 import { hasSupabaseConfig } from './lib/supabaseClient'
 import type { Book, BookInput } from './types'
+
+type SortField = 'wishlisted' | 'title' | 'author' | 'language' | 'quantity'
+type SortDirection = 'asc' | 'desc'
+
 
 function LibraryApp() {
   const [books, setBooks] = useState<Book[]>([])
@@ -15,6 +19,9 @@ function LibraryApp() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  const [sortField, setSortField] = useState<SortField>('title')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
   const fetchBooks = useCallback(async () => {
     const trimmedQuery = query.trim()
@@ -143,7 +150,26 @@ function LibraryApp() {
   }
 
   const selectedBooks = books.filter((book) => selected.has(book.id))
-  const hashWishlistedSelection = selectedBooks.some((book) => book.wishlisted)
+  const hasWishlistedSelection = selectedBooks.some((book) => book.wishlisted)
+
+  const sortedBook = useMemo(() => {
+    const multiplier = sortDirection === 'asc' ? 1 : -1
+
+    return [...books].sort((a, b) => {
+      switch (sortField) {
+        case 'title':
+          return a.title.localeCompare(b.title) * multiplier
+        case 'quantity':
+          return (a.quantity - b.quantity) * multiplier
+        case 'language':
+          return a.language.localeCompare(b.language) * multiplier
+        case 'wishlisted':
+          return (Number(a.wishlisted) - Number(b.wishlisted)) * multiplier
+        default:
+          return 0
+      }
+    })
+  }, [books, sortField, sortDirection])
 
   if (!hasSupabaseConfig) {
     return (
@@ -215,6 +241,27 @@ function LibraryApp() {
               </button>
             </form>
 
+            <div className="flex items-center gap-2 text-sm">
+              <label className="text-slate-600">Sort by</label>
+              <select
+                value={sortField}
+                onChange={(e) => setSortField(e.target.value as SortField)}
+                className="text-slate-900 rounded border border-slate-300 px-2 py-1"
+              >
+                <option value="title">Title</option>
+                <option value="quantity">Quantity</option>
+                <option value="language">Language</option>
+                <option value="wishlisted">Wishlisted</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
+                className="rounded border border-slate-300 px-2 py-1 text-slate-900"
+              >
+                {sortDirection === 'asc' ? '↑ Ascending' : '↓ Descending'}
+              </button>
+            </div>
+
             {showInventory && (
               <>
                 {selected.size > 0 && (
@@ -237,7 +284,7 @@ function LibraryApp() {
                       Delete
                     </button>
 
-                    {hashWishlistedSelection ? (
+                    {hasWishlistedSelection ? (
                       <button
                         type="button"
                         onClick={() => bulkSetWishlist(false)}
@@ -263,7 +310,7 @@ function LibraryApp() {
                   <p className="text-slate-500">Loading...</p>
                 ) : (
                   <BookList
-                    books={books}
+                    books={sortedBook}
                     selected={selected}
                     onToggleSelect={toggleSelect}
                     onEdit={(book) => {
