@@ -114,7 +114,10 @@ export function BookForm({ initial, onSubmit, onCancel }: Props) {
           className="bg-slate-800 text-white rounded px-4 py-2 hover:bg-slate-700 disabled:opacity-50"
         >
 
-          {/**TODO: Add success message */}
+          {/**TODO: Add success message  from daisuUI component
+           * Reference:
+           * https://daisyui.com/components/alert/
+          */}
           {saving ? 'Saving...' : initial ? 'Save changes' : 'Add book'}
         </button>
         {onCancel && (

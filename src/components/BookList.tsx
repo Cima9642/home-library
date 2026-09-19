@@ -39,7 +39,10 @@ export function BookList({books, selected, onToggleSelect, onEdit, onDelete}: Pr
                             )}
                         </div>
                     </label>
-                    {/**TODO: Add delete confirmation */}
+                    {/**TODO: 
+                     * Add delete confirmation alert using daisyui alert component
+                     * Reference:
+                     https://daisyui.com/components/alert/*/}
                     <div className="flex gap-2">
                         <button
                         onClick={() => onEdit(book)}
